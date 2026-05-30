@@ -21,15 +21,6 @@ export function permute(arr) {
 }
 
 
-export function dictToPieces(dict) {
-  let arr = Array.from({ length: 8 }, (_, i) => i);
-  for (const [pos, piece] of Object.entries(dict)) {
-    arr[pos] = piece;
-  }
-  return arr;
-}
-
-
 export function orient(arr) {
   let myArr = [...arr];
 
@@ -46,22 +37,30 @@ export function orient(arr) {
 }
 
 
-export function dictToOris(dict) {
-  let arr = Array(8).fill(0);
-  for (const [pos, ori] of Object.entries(dict)) {
-    arr[pos] = ori;
+export function dictToState(solvedState, dict) {
+  for (const [pos, piece] of Object.entries(dict)) {
+    solvedState[pos] = piece;
   }
-  return arr;
+  return solvedState;
 }
 
 
 export async function scramble() {
+
+  let solvedPlaces = Array.from({ length: 8 }, (_, i) => i);
+  let solvedOris = Array(8).fill(0);
+
+  let pieces = dictToState(solvedPlaces, { ...permute(orbit1), ...permute(orbit2) });
+  let oris = dictToState(solvedOris, orient(ollOrbit));
+
   var pll = {
     CORNERS: {
-      pieces: [...dictToPieces({ ...permute(orbit1),...permute(orbit2)})],
-      orientation: [...dictToOris({ ...orient(ollOrbit) })],
+      pieces: pieces,
+      orientation: oris,
     }
   }
+  // console.log(JSON.stringify(pll, null, 2));
+
   const cube2x2 = await puzzles["2x2x2"].kpuzzle();
   const pattern = new KPattern(cube2x2, pll);
   const solution = await experimentalSolve2x2x2(pattern);
@@ -71,5 +70,5 @@ export async function scramble() {
 
 
 if (process.argv[1].endsWith("scramble.js")) {
-  main();
+  scramble().then((s) => console.log(s.toString()));
 }
