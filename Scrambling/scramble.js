@@ -5,7 +5,11 @@ import { KPattern } from "cubing/kpuzzle";
 
 const orbit1 = [0, 1, 2, 3, 5];
 const orbit2 = [4, 6, 7];
-const ollOrbit = [0, 1, 2, 3, 5]
+const ollOrbit = [0, 1, 2, 3, 5];
+const balancePiece = 0;
+
+const solvedPlaces = Array.from({ length: 8 }, (_, i) => i);
+const solvedOris = Array(8).fill(0);
 
 
 export function permute(arr) {
@@ -24,13 +28,9 @@ export function permute(arr) {
 export function orient(arr) {
   let myArr = [...arr];
 
-  let counter = 0;
-  for (let i = 0; i < myArr.length - 1; i++) {
-    const j = Math.floor(Math.random() * 2);
-    myArr[i] = j;
-    counter += j;
+  for (let i = 0; i < myArr.length; i++) {
+    myArr[i] = Math.floor(Math.random() * 2);
   }
-  myArr[arr.length - 1] = (3 - counter % 3) % 3;
 
   let dict = Object.fromEntries(myArr.map((v, i) => [arr[i], v]))
   return dict;
@@ -45,13 +45,22 @@ export function dictToState(solvedState, dict) {
 }
 
 
-export async function scramble() {
 
-  let solvedPlaces = Array.from({ length: 8 }, (_, i) => i);
-  let solvedOris = Array(8).fill(0);
+function fixPairity(balancePiece, oris) {
+  let counter = 0;
+  for (let i = 0; i < oris.length; i++) {
+    if (i !== balancePiece) counter += oris[i];
+  }
+
+  oris[balancePiece] = (3 - counter % 3) % 3;
+}
+
+export async function scramble() {
 
   let pieces = dictToState(solvedPlaces, { ...permute(orbit1), ...permute(orbit2) });
   let oris = dictToState(solvedOris, orient(ollOrbit));
+
+  fixPairity(balancePiece, oris);
 
   var pll = {
     CORNERS: {
@@ -59,7 +68,6 @@ export async function scramble() {
       orientation: oris,
     }
   }
-  // console.log(JSON.stringify(pll, null, 2));
 
   const cube2x2 = await puzzles["2x2x2"].kpuzzle();
   const pattern = new KPattern(cube2x2, pll);
