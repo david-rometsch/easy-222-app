@@ -7,10 +7,11 @@ class EasyTwo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child:Text('EasyTwo')
-      ),
+    return Container(
+      color: Colors.blue,
+      child: Center(
+        child: Text('EasyTwo')
+      )
     );
   }  
 }

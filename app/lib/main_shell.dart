@@ -30,6 +30,7 @@ class _MainShellState extends State<MainShell> {
                 setState(() {
                   currentScreen = HomeScreen(title: 'Home');
                 });
+                Navigator.pop(context);
               },
             ),
 
@@ -39,6 +40,7 @@ class _MainShellState extends State<MainShell> {
                 setState(() {
                   currentScreen = EasyTwo(title: 'Easy Two');
                 });
+                Navigator.pop(context);
               },
             ),
           ],

@@ -8,8 +8,11 @@ class HomeScreen extends StatelessWidget {
 
   @override 
   Widget build(BuildContext context){
-    return Center(
-      child:Text('Hello use the Hamburger to navigate!')
+    return Container(
+      color:Colors.cyan,
+      child: Center(
+        child: Text('Hello use the Hamburger to navigate!')
+      )
     );
   }
 }
