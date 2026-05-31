@@ -43,6 +43,9 @@ export async function test(scrambleType) {
   return scramble;
 }
 if (process.argv[1].endsWith("test.js")) {
-  test(scrambleType).then((s) => console.log(s.toString()));
+  // test(scrambleType).then((s) => console.log(s.toString()));
+  const yMove = cube2x2.algToTransformation("y");
+  const rotated = defaultPattern.applyTransformation(yMove);
+  console.log(JSON.stringify(rotated.patternData));
 }
 

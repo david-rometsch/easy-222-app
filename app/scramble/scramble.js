@@ -2,10 +2,10 @@ import { experimentalSolve2x2x2 } from "cubing/search";
 import { puzzles } from "cubing/puzzles"
 import { KPattern } from "cubing/kpuzzle";
 import { scrambleTypes } from "./scramble-definition.js";
-import { rotate, rotateScramble } from "./rotate.js";
+import { rotate, rotateRand, rotateScrambleRand } from "./rotate.js";
 
 let scrambleType = 'threeOriented';
-let direction = 'x';
+let direction = 'z';
 
 
 export let solvedCubeState = {
@@ -67,8 +67,7 @@ export async function scramble(scrambleType) {
   let cubeState = structuredClone(solvedCubeState);
 
 
-  cubeState = rotate(cubeState, direction);
-  // console.log(JSON.stringify(scrambleDef));
+  cubeState = rotateRand(cubeState);
 
 
   let orbit1 = scrambleDef.orbit1;
@@ -82,15 +81,15 @@ export async function scramble(scrambleType) {
   orient(cubeState, ollOrbit);
   fixPairity(cubeState, ollOrbit, balancePiece);
 
-  console.log(JSON.stringify(cubeState));
+  // console.log(JSON.stringify(cubeState));
 
   var KCubeState = cubeStateToK(cubeState);
 
-  console.log(`kcubestate: ${JSON.stringify(KCubeState)}`);
+  // console.log(`kcubestate: ${JSON.stringify(KCubeState)}`);
   const cube2x2 = await puzzles["2x2x2"].kpuzzle();
   let scrState = new KPattern(cube2x2, KCubeState);
   // rotade randomley
-  scrState = rotateScramble(cube2x2, scrState);
+  scrState = rotateScrambleRand(cube2x2, scrState);
 
   const solution = await experimentalSolve2x2x2(scrState);
   const scramble = solution.invert();

@@ -13,7 +13,7 @@ export const scrambleTypes = {
   },
   pll: {
     orbit1: [0, 1, 2, 3],
-    orbit2: [4, 5, 6, 7],
+    orbit2: [],
     ollOrbit: [],
     balancePiece: 0,
   },
@@ -25,8 +25,14 @@ export const scrambleTypes = {
   },
   eg: {
     orbit1: [0, 1, 2, 3],
-    orbit2: [4,5,6,7],
+    orbit2: [4, 5, 6, 7],
     ollOrbit: [0, 1, 2, 3],
+    balancePiece: 0,
+  },
+  solved: {
+    orbit1: [],
+    orbit2: [],
+    ollOrbit: [],
     balancePiece: 0,
   },
 }
