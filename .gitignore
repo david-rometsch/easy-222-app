@@ -3,3 +3,5 @@ cstimer_module
 node_modules/
 package-lock.json
 package.json
+scramble/test.js
+docs/
