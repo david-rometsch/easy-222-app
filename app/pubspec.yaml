@@ -15,7 +15,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   fsrs: ^2.0.1
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -26,9 +25,8 @@ flutter:
   uses-material-design: true
 
   assets:
-    - lib/assets/images/
-    - lib/assets/srcambles/2x2/
-
+    - assets/images/
+    - assets/scrambles/two_by_two/
 
   # To add custom fonts to your application, add a fonts section here,
   # see https://flutter.dev/to/font-from-package
