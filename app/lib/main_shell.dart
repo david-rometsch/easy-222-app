@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/easy_222.dart';
 import 'screens/222_record.dart';
 import 'get_scramble.dart';
+import 'app_locale.dart';
 
 class MainShell extends StatefulWidget {
 
@@ -21,7 +22,7 @@ class _MainShellState extends State<MainShell> {
       (s) => setState(() {
         _currentScramble = s;
         _currentScreen = EasyTwo(
-          title: 'Easy 222',
+          title: AppLocale.t(context, 'title'),
           scramble: s,
           onNextScramble: _nextScramble,
         );
@@ -30,7 +31,7 @@ class _MainShellState extends State<MainShell> {
   }
 
   void _goToEasyTwo() {
-    setState(() => _currentScreen = EasyTwo(title: 'Easy 222', scramble: _currentScramble, onNextScramble: _nextScramble));
+    setState(() => _currentScreen = EasyTwo(title: 'Easy Two', scramble: _currentScramble, onNextScramble: _nextScramble));
   }
 
   @override
@@ -54,12 +55,18 @@ class _MainShellState extends State<MainShell> {
     return Scaffold(
       appBar: AppBar(  // three elements [leading] [title] [actions]
         title: Align(
-          alignment: Alignment.centerRight,
+          // alignment: Alignment.centerRight,
           child: CircleAvatar(
             backgroundImage: AssetImage('assets/images/cube.jpg'),
             radius: 18,
-          )
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => localeNotfifier.value = 'de', 
+            child: Text('de')
+          ) 
+        ],
       ),
 
       drawer: Drawer(
