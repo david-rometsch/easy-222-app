@@ -12,8 +12,7 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  late Widget _currentScreen;
-
+  Widget _currentScreen = const CircularProgressIndicator();
   dynamic _currentScramble;
   final _getScramble = GetScramble();
 
@@ -96,7 +95,7 @@ class _MainShellState extends State<MainShell> {
           ],
         ),
       ),
-      body: _currentScreen,
+      body: _currentScreen 
     );
   }
 }
