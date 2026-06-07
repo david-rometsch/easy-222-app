@@ -16,3 +16,9 @@ This app shows the following Technologies:
 - API-Functionallity
 - Sensor use
 
+## Integrate new scramblelist
+```sh
+cd app/
+make assets/scrambles.jso
+```
+
