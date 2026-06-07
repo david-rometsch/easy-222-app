@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
 import 'main_shell.dart';
-// import 'package:flutter/rendering.dart';
-// import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:app/app_theme.dart';
-// import 'package:app/texts.dart';
+import 'package:app/app_locale.dart';
+
 
 void main() {
   // debugPaintSizeEnabled = true;
-  runApp(const MyApp());
+  runApp(
+    AppLocale(
+      notifier: localeNotfifier,
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.system,
+        home: const MainShell()
+      )
+    )
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      home: MainShell()
-    );
-  }
-}

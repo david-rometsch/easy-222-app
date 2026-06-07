@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'screens/easy_222.dart';
 import 'screens/222_record.dart';
 import 'get_scramble.dart';
+import 'app_locale.dart';
 
 class MainShell extends StatefulWidget {
-
   const MainShell({super.key});
 
   @override
@@ -21,7 +21,6 @@ class _MainShellState extends State<MainShell> {
       (s) => setState(() {
         _currentScramble = s;
         _currentScreen = EasyTwo(
-          title: 'Easy 222',
           scramble: s,
           onNextScramble: _nextScramble,
         );
@@ -30,18 +29,24 @@ class _MainShellState extends State<MainShell> {
   }
 
   void _goToEasyTwo() {
-    setState(() => _currentScreen = EasyTwo(title: 'Easy 222', scramble: _currentScramble, onNextScramble: _nextScramble));
+    setState(
+      () => _currentScreen = EasyTwo(
+        scramble: _currentScramble,
+        onNextScramble: _nextScramble,
+      ),
+    );
   }
 
   @override
   void initState() {
     super.initState(); // initiation of parentclass
     //then is exewcuted immediatley, s as result form pickRandomScramble
-    _getScramble.pickRandomScramble().then(  // because no await herer. 
+    _getScramble.pickRandomScramble().then(
+      // because no await herer.
       (s) => setState(() {
         _currentScramble = s;
-        _currentScreen = EasyTwo(  // has to be herer, because async 'then'
-          title: 'Easy 222',
+        _currentScreen = EasyTwo(
+          // has to be herer, because async 'then'
           scramble: _currentScramble,
           onNextScramble: _nextScramble,
         );
@@ -52,14 +57,26 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(  // three elements [leading] [title] [actions]
+      appBar: AppBar(
+        // three elements [leading] [title] [actions]
         title: Align(
-          alignment: Alignment.centerRight,
+          // alignment: Alignment.centerRight,
           child: CircleAvatar(
             backgroundImage: AssetImage('assets/images/cube.jpg'),
             radius: 18,
-          )
+          ),
         ),
+        actions: [
+          ValueListenableBuilder<String>(
+            valueListenable: localeNotfifier,
+            // parameter: context, actual value of localeNotfifier(free naming, _ for child optimizwation paameter not widtet!
+            builder: (context, _locale, _) => TextButton(
+              onPressed: () =>
+                  localeNotfifier.value = _locale == 'de' ? 'en' : 'de',
+              child: Text(localeNotfifier.value == 'de' ? '🇬🇧' : '🇩🇪'),
+            ),
+          ),
+        ],
       ),
 
       drawer: Drawer(
@@ -67,12 +84,12 @@ class _MainShellState extends State<MainShell> {
           children: [
             // DrawerHeader(),
             ListTile(
-              title: Text('My Records'),
+              title: Text(AppLocale.t(context, '222_record')),
               onTap: () {
                 setState(() {
                   _currentScreen = RecordPage(
                     title: 'My Records',
-                    goToEasyTwo: _goToEasyTwo
+                    goToEasyTwo: _goToEasyTwo,
                   );
                 });
                 Navigator.pop(context);
@@ -80,11 +97,10 @@ class _MainShellState extends State<MainShell> {
             ),
 
             ListTile(
-              title: Text('Easy 222'),
+              title: Text(AppLocale.t(context, 'e2_screen')),
               onTap: () {
                 setState(() {
                   _currentScreen = EasyTwo(
-                    title: 'Easy 222',
                     scramble: _currentScramble,
                     onNextScramble: _nextScramble,
                   );
@@ -95,7 +111,7 @@ class _MainShellState extends State<MainShell> {
           ],
         ),
       ),
-      body: _currentScreen 
+      body: _currentScreen,
     );
   }
 }
