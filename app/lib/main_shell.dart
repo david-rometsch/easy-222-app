@@ -1,28 +1,27 @@
 import 'package:flutter/material.dart';
 import 'screens/easy_222.dart';
-import 'screens/home_screen.dart';
+import 'screens/222_record.dart';
 import 'get_scramble.dart';
 
 class MainShell extends StatefulWidget {
-  final String title;
 
-  const MainShell({super.key, required this.title});
+  const MainShell({super.key});
 
   @override
   State<MainShell> createState() => _MainShellState();
 }
 
 class _MainShellState extends State<MainShell> {
-  late Widget currentScreen;
+  late Widget _currentScreen;
 
-  dynamic currentScramble;
-  final getScramble = GetScramble();
+  dynamic _currentScramble;
+  final _getScramble = GetScramble();
 
   void _nextScramble() {
-    getScramble.pickRandomScramble().then(
+    _getScramble.pickRandomScramble().then(
       (s) => setState(() {
-        currentScramble = s;
-        currentScreen = EasyTwo(
+        _currentScramble = s;
+        _currentScreen = EasyTwo(
           title: 'Easy 222',
           scramble: s,
           onNextScramble: _nextScramble,
@@ -31,16 +30,20 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
+  void _goToEasyTwo() {
+    setState(() => _currentScreen = EasyTwo(title: 'Easy 222', scramble: _currentScramble, onNextScramble: _nextScramble));
+  }
+
   @override
   void initState() {
     super.initState(); // initiation of parentclass
     //then is exewcuted immediatley, s as result form pickRandomScramble
-    getScramble.pickRandomScramble().then(  // because no await herer. 
+    _getScramble.pickRandomScramble().then(  // because no await herer. 
       (s) => setState(() {
-        currentScramble = s;
-        currentScreen = EasyTwo(  // has to be herer, because async 'then'
+        _currentScramble = s;
+        _currentScreen = EasyTwo(  // has to be herer, because async 'then'
           title: 'Easy 222',
-          scramble: currentScramble,
+          scramble: _currentScramble,
           onNextScramble: _nextScramble,
         );
       }),
@@ -50,18 +53,28 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(  // three elements [leading] [title] [actions]
+        title: Align(
+          alignment: Alignment.centerRight,
+          child: CircleAvatar(
+            backgroundImage: AssetImage('assets/images/cube.jpg'),
+            radius: 18,
+          )
+        ),
+      ),
 
       drawer: Drawer(
         child: ListView(
           children: [
-            DrawerHeader(child: Text('Menu')),
-
+            // DrawerHeader(),
             ListTile(
-              title: Text('Home'),
+              title: Text('My Records'),
               onTap: () {
                 setState(() {
-                  currentScreen = HomeScreen(title: 'Home');
+                  _currentScreen = RecordPage(
+                    title: 'My Records',
+                    goToEasyTwo: _goToEasyTwo
+                  );
                 });
                 Navigator.pop(context);
               },
@@ -71,9 +84,9 @@ class _MainShellState extends State<MainShell> {
               title: Text('Easy 222'),
               onTap: () {
                 setState(() {
-                  currentScreen = EasyTwo(
+                  _currentScreen = EasyTwo(
                     title: 'Easy 222',
-                    scramble: currentScramble,
+                    scramble: _currentScramble,
                     onNextScramble: _nextScramble,
                   );
                 });
@@ -83,7 +96,7 @@ class _MainShellState extends State<MainShell> {
           ],
         ),
       ),
-      body: currentScreen,
+      body: _currentScreen,
     );
   }
 }

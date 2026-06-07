@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'main_shell.dart';
-import 'package:flutter/rendering.dart';
+// import 'package:flutter/rendering.dart';
+// import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:app/app_theme.dart';
+// import 'package:app/texts.dart';
 
 void main() {
-  debugPaintSizeEnabled = true;
+  // debugPaintSizeEnabled = true;
   runApp(const MyApp());
 }
 
@@ -15,9 +18,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.blue)),
-      home: MainShell(title: 'MainShell')
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
+      home: MainShell()
     );
   }
 }
-

@@ -60,13 +60,11 @@ export function rotate(cubeState, direction) {
 
 export function rotateRand(cubeState) {
   let rotations = Math.floor(Math.random() * 4);
-  console.log(`x-rotations: ${rotations}`)
   for (let i = 0; i < rotations; i++) {
     cubeState = rotate(cubeState, 'x');
   }
 
   rotations = [0, 1, 3][Math.floor(Math.random() * 3)];
-  console.log(`z-rotations: ${rotations}`)
   for (let i = 0; i < rotations; i++) {
     cubeState = rotate(cubeState, 'z');
   }
