@@ -3,13 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:app/app_locale.dart';
 
 class EasyTwo extends StatelessWidget {
-  final String title;
   final String scramble;
   final VoidCallback onNextScramble;
 
   const EasyTwo({
     super.key, 
-    required this.title, 
     required this.scramble,
     required this.onNextScramble, 
   });
@@ -27,27 +25,22 @@ class EasyTwo extends StatelessWidget {
         }
         return KeyEventResult.ignored;
       },
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: onNextScramble,
-            child: Container(
-              color: Colors.blue,
-              child: Center(
-                child: Text(
-                  scramble,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+      child: GestureDetector(
+        onTap: onNextScramble,
+        child: Container(
+          color: Colors.blue,
+          child: Center(
+            child: Text(
+              scramble,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          Text(AppLocale.t(context, 'title'))
-        ]
-      )
+        ),
+      ),
     );
   }
 }

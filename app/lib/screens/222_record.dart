@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/get_api.dart';
+import 'package:app/app_locale.dart';
 
 class RecordPage extends StatelessWidget {
   const RecordPage({super.key, required this.title, required this.goToEasyTwo});
@@ -20,14 +21,15 @@ class RecordPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            'My actual 2x2 record: $record',
+            AppLocale.t(context, '222_record_display') + record,
             style: Theme.of(context).textTheme.displayLarge
           ),
           SizedBox(height: 24),
           ElevatedButton(
             onPressed: goToEasyTwo,
-            child: Text('Train More'))
-        ],
+            child: Text(AppLocale.t(context, 'train_more'))
+          )
+        ]
       ),
     );
   }
