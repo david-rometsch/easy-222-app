@@ -112,4 +112,3 @@ const cube2x2 = await puzzles["2x2x2"].kpuzzle();
 const defaultPattern = cube2x2.defaultPattern();
 const yMove = cube2x2.algToTransformation("z");
 const rotated = defaultPattern.applyTransformation(yMove);
-console.log(JSON.stringify(rotated.patternData));

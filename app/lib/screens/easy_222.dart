@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:app/app_locale.dart';
 
 class EasyTwo extends StatelessWidget {
   final String scramble;

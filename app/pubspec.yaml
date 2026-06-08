@@ -13,9 +13,11 @@ dependencies:
     sdk: flutter
   http: ^1.0.0
   flex_color_scheme: ^8.4.0
+  flutter_launcher_icons: ^0.14.4
 
   cupertino_icons: ^1.0.8
   fsrs: ^2.0.1
+  shake: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -30,5 +32,11 @@ flutter:
     - assets/images/
     - assets/scrambles/two_by_two/
 
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/cube.jpg"
+
   # To add custom fonts to your application, add a fonts section here,
   # see https://flutter.dev/to/font-from-package
+  # dependencies:
