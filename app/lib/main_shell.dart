@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/easy_222.dart';
 import 'screens/222_record.dart';
+import 'screens/settings.dart';
 import 'get_scramble.dart';
 import 'app_locale.dart';
 import 'package:shake/shake.dart';
@@ -104,7 +105,8 @@ Widget build(BuildContext context) {
       drawer: Drawer(
         child: ListView(
           children: [
-            // DrawerHeader(),
+
+            // Records 
             ListTile(
               title: Text(AppLocale.t(context, '222_record')),
               onTap: () {
@@ -114,7 +116,8 @@ Widget build(BuildContext context) {
                 Navigator.pop(context);
               },
             ),
-
+            
+            // Easy Two
             ListTile(
               title: Text(AppLocale.t(context, 'e2_screen')),
               onTap: () {
@@ -123,6 +126,17 @@ Widget build(BuildContext context) {
                     scramble: _currentScramble,
                     onNextScramble: _nextScramble,
                   );
+                });
+                Navigator.pop(context);
+              },
+            ),
+
+            // Settings
+            ListTile(
+              title: Text(AppLocale.t(context, 'settings')),
+              onTap: () {
+                setState(() {
+                  _currentScreen = Settings();
                 });
                 Navigator.pop(context);
               },

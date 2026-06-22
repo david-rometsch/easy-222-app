@@ -2,20 +2,14 @@ import 'package:flutter/material.dart';
 import 'main_shell.dart';
 import 'package:app/app_theme.dart';
 import 'package:app/app_locale.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:app/app_settings.dart';
+
 
 void main() async {
   // debugPaintSizeEnabled = true;
   WidgetsFlutterBinding.ensureInitialized(); // makes sure fltter is loaded at this point
-  await Hive.initFlutter(); // init hive incl path
+  await AppSettings.init(); 
 
-  final hive = await Hive.openBox('settings');
-
-  if (!hive.containsKey('first_start')) {
-    hive.put('wca_id', null);
-    hive.put('first_start', true);
-  }
 
   runApp(
     AppLocale(
