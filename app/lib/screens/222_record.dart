@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:app/get_api.dart';
 import 'package:app/app_locale.dart';
+import 'package:app/app_settings.dart';
 
 class RecordPage extends StatefulWidget {
   final VoidCallback onGoToEasyTwo;
-  const RecordPage({super.key, required this.onGoToEasyTwo});
+  final VoidCallback onGoToSettings;
+  const RecordPage({
+    super.key,
+    required this.onGoToEasyTwo,
+    required this.onGoToSettings,
+  });
 
   @override
   State<RecordPage> createState() => _RecordPageState();
@@ -15,19 +21,14 @@ class _RecordPageState extends State<RecordPage> {
   bool _loading = true;
 
   String _formatRecord(dynamic best) {
-    if (best == null) return 'no value found';
+    if (best == null) return AppLocale.t(context, 'no_value_found');
     return '${(best / 100).toStringAsFixed(2)}s';
   }
 
   @override
   void initState() {
     super.initState();
-    Api.getWcaData('2019ROME03').then((data) {
-      setState(() {
-        record = data ?? {};
-        _loading = false;
-      });
-    });
+    _getWcaData();
   }
 
   // final record = best != null ? '${(best / 100).toStringAsFixed(2)}s' : 'not defined';
@@ -49,6 +50,17 @@ class _RecordPageState extends State<RecordPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('WCA-ID: ${AppSettings.wcaId}'),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: widget.onGoToSettings,
+                child: Text(AppLocale.t(context, 'set_wcaid')),
+              ),
+            ],
+          ),
           SizedBox(height: 24),
           ElevatedButton(
             onPressed: widget.onGoToEasyTwo,
@@ -57,5 +69,26 @@ class _RecordPageState extends State<RecordPage> {
         ],
       ),
     );
+  }
+
+  void _getWcaData() async {
+    try {
+      final data = await Api.getWcaData(AppSettings.wcaId);
+
+      setState(() {
+        record = data;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _loading = false;
+      });
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No internet connection')),
+      );
+    }
   }
 }

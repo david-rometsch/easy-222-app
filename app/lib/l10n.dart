@@ -6,6 +6,8 @@ final localization = {
     'train_more': 'Train More!',
     'settings': 'Settings',
     'toggle_shake': 'Shake to scramble',
+    'no_value_found': 'no value found...',
+    'set_wcaid': 'Set WCA-ID',
   },
   'de': {
     'e2_screen': 'Entspannte Zwei',
@@ -14,5 +16,7 @@ final localization = {
     'train_more': 'Trainiere mehr!',
     'settings': 'Einstellungen',
     'toggle_shake': 'Schütteln zum Mischen',
+    'no_value_found': 'kein Wert gefunden...',
+    'set_wcaid': 'Gebe WCA-ID ein',
   },
 };

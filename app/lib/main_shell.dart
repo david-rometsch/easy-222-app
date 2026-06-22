@@ -18,6 +18,10 @@ class _MainShellState extends State<MainShell> {
     setState(() => _currentScreen = EasyTwo());
   }
 
+  void onGoToSettings() {
+    setState(() => _currentScreen = Settings());
+  }
+
   @override
   void initState() {
     super.initState(); // initiation of parentclass
@@ -57,7 +61,7 @@ class _MainShellState extends State<MainShell> {
               title: Text(AppLocale.t(context, '222_record')),
               onTap: () {
                 setState(() {
-                  _currentScreen = RecordPage(onGoToEasyTwo: onGoToEasyTwo);
+                  _currentScreen = RecordPage(onGoToEasyTwo: onGoToEasyTwo, onGoToSettings: onGoToSettings);
                 });
                 Navigator.pop(context);
               },
