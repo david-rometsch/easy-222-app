@@ -86,9 +86,9 @@ class _RecordPageState extends State<RecordPage> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No internet connection')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppLocale.t(context, 'no_inet'))));
     }
   }
 }

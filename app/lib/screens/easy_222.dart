@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:app/get_scramble.dart';
 import 'package:app/app_settings.dart';
 import 'package:shake/shake.dart';
+import 'package:app/app_locale.dart';
 
 class EasyTwo extends StatefulWidget {
   const EasyTwo({super.key});
@@ -37,17 +38,50 @@ class _EasyTwoState extends State<EasyTwo> {
       shakeSlopTimeMS: 300, // Minimum time between shake detections (ms)
       minimumShakeCount: 1, //  Reset shake count after this time (ms)
     );
+    if (!AppSettings.toggleShake &&
+        AppSettings.firstStart &&
+        !AppSettings.shakeShown) {
+      AppSettings.shakeShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocale.t(context, 'scr_off_msg'))),
+        );
+      });
+    }
   }
 
-  Future<void> _init() async {
-    await _scrambler.loadData();
-    _nextScramble();
+  @override
+  void didUpdateWidget(covariant EasyTwo oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    _restartShakeDetector();
+  }
+
+  void _restartShakeDetector() {
+    _shakeDetector.stopListening();
+
+    _shakeDetector = ShakeDetector.autoStart(
+      onPhoneShake: (event) {
+        if (AppSettings.toggleShake) {
+          _nextScramble();
+        }
+      },
+      shakeThresholdGravity: 1.1,
+      shakeSlopTimeMS: 300,
+      minimumShakeCount: 1,
+    );
   }
 
   @override
   void dispose() {
     _shakeDetector.stopListening();
     super.dispose();
+  }
+
+  Future<void> _init() async {
+    await _scrambler.loadData();
+    _nextScramble();
   }
 
   @override

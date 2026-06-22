@@ -8,6 +8,8 @@ final localization = {
     'toggle_shake': 'Shake to scramble',
     'no_value_found': 'no value found...',
     'set_wcaid': 'Set WCA-ID',
+    'scr_off_msg': 'Shake to go to next Scramble is off. Change to "on" if you like to use it in Settings',
+    'no_inet': 'No internet connection',
   },
   'de': {
     'e2_screen': 'Entspannte Zwei',
@@ -18,5 +20,7 @@ final localization = {
     'toggle_shake': 'Schütteln zum Mischen',
     'no_value_found': 'kein Wert gefunden...',
     'set_wcaid': 'Gebe WCA-ID ein',
+    'scr_off_msg': 'Schütteln um einen neuen Scramle zu bekommen ist auf "aus". Ändere es in Einstellungen.',
+    'no_inet': 'Keine Internetverbindung',
   },
 };
