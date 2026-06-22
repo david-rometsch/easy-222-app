@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:app/get_scramble.dart';
+import 'package:app/app_settings.dart';
 import 'package:shake/shake.dart';
 
 class EasyTwo extends StatefulWidget {
@@ -27,7 +28,9 @@ class _EasyTwoState extends State<EasyTwo> {
     _init();
     _shakeDetector = ShakeDetector.autoStart(
       onPhoneShake: (ShakeEvent event) {
-        _nextScramble();
+        if (AppSettings.toggleShake) {
+          _nextScramble();
+        }
       },
       shakeThresholdGravity:
           1.1, // sensitivity - lower value makes it more sensitive
@@ -66,15 +69,15 @@ class _EasyTwoState extends State<EasyTwo> {
           color: Colors.blue,
           child: Center(
             child: _scramble.isEmpty
-              ? CircularProgressIndicator()
-              : Text( 
-                _scramble,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-              ),
-            ),
+                ? CircularProgressIndicator()
+                : Text(
+                    _scramble,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ),
       ),
