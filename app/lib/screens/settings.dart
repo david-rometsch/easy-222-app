@@ -1,10 +1,17 @@
+import 'package:app/screens/222_record.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:app/app_settings.dart';
 import 'package:app/app_locale.dart';
 
 class Settings extends StatefulWidget {
-  const Settings({super.key, final firstStart, final wcaId});
+  final GlobalKey<RecordPageState> recordKey;
+  const Settings({
+    super.key,
+    final firstStart,
+    final wcaId,
+    required this.recordKey,
+  });
 
   @override
   State<Settings> createState() => _SettingsState();
@@ -46,7 +53,10 @@ class _SettingsState extends State<Settings> {
                 width: 200,
                 child: TextField(
                   controller: _wcaIdController,
-                  onChanged: (val) => AppSettings.wcaId = val,
+                  onChanged: (val) {
+                    AppSettings.wcaId = val;
+                    widget.recordKey.currentState?.setState(() {});
+                  },
                   decoration: InputDecoration(hintText: '2020MEIE01'),
                 ),
               ),

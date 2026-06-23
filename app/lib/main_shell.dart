@@ -13,13 +13,14 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   Widget _currentScreen = const Center(child: CircularProgressIndicator());
+  final _recordKey = GlobalKey<RecordPageState>();
 
   void onGoToEasyTwo() {
     setState(() => _currentScreen = EasyTwo());
   }
 
   void onGoToSettings() {
-    setState(() => _currentScreen = Settings());
+    setState(() => _currentScreen = Settings(recordKey: _recordKey));
   }
 
   @override
@@ -52,17 +53,26 @@ class _MainShellState extends State<MainShell> {
           ),
         ],
       ),
-
+      drawerEdgeDragWidth: 10,
       drawer: Drawer(
+        width: 120,
         child: ListView(
           children: [
             // Records
             ListTile(
               title: Text(AppLocale.t(context, '222_record')),
               onTap: () {
-                setState(() {
-                  _currentScreen = RecordPage(onGoToEasyTwo: onGoToEasyTwo, onGoToSettings: onGoToSettings);
-                });
+                if (_currentScreen is! RecordPage) {
+                  setState(() {
+                    _currentScreen = RecordPage(
+                      key: _recordKey,
+                      onGoToEasyTwo: onGoToEasyTwo,
+                      onGoToSettings: onGoToSettings,
+                    );
+                  });
+                } else {
+                  _recordKey.currentState?.setState(() => {});
+                }
                 Navigator.pop(context);
               },
             ),
@@ -80,10 +90,10 @@ class _MainShellState extends State<MainShell> {
 
             // Settings
             ListTile(
-              title: Text(AppLocale.t(context, 'settings')),
+              title: Text('⚙'),
               onTap: () {
                 setState(() {
-                  _currentScreen = Settings();
+                  _currentScreen = Settings(recordKey: _recordKey);
                 });
                 Navigator.pop(context);
               },

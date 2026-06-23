@@ -6,6 +6,7 @@ import 'package:app/app_settings.dart';
 class RecordPage extends StatefulWidget {
   final VoidCallback onGoToEasyTwo;
   final VoidCallback onGoToSettings;
+
   const RecordPage({
     super.key,
     required this.onGoToEasyTwo,
@@ -13,12 +14,17 @@ class RecordPage extends StatefulWidget {
   });
 
   @override
-  State<RecordPage> createState() => _RecordPageState();
+  State<RecordPage> createState() => RecordPageState();
 }
 
-class _RecordPageState extends State<RecordPage> {
+class RecordPageState extends State<RecordPage> {
   Map<String, dynamic> record = {};
   bool _loading = true;
+  final _blueTextStyle = TextStyle(
+    color: Colors.blue,
+    fontSize: 32,
+    fontWeight: FontWeight.bold,
+  );
 
   String _formatRecord(dynamic best) {
     if (best == null) return AppLocale.t(context, 'no_value_found');
@@ -36,37 +42,44 @@ class _RecordPageState extends State<RecordPage> {
   Widget build(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator());
     return Container(
-      // color: Colors.cyan,
       alignment: Alignment.center,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            '${AppLocale.t(context, '222_record_display')}${_formatRecord(record['personal_records']?['222']?['single']?['best'])}',
-            style: TextStyle(
-              color: Colors.blue,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              '${AppLocale.t(context, '222_record_display')}',
+              style: _blueTextStyle,
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('WCA-ID: ${AppSettings.wcaId}'),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: widget.onGoToSettings,
-                child: Text(AppLocale.t(context, 'set_wcaid')),
-              ),
-            ],
-          ),
-          SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: widget.onGoToEasyTwo,
-            child: Text(AppLocale.t(context, 'train_more')),
-          ),
-        ],
+            Text(
+              'single: ${_formatRecord(record['personal_records']?['222']?['single']?['best'])}',
+              style: _blueTextStyle,
+            ),
+            Text(
+              'ao5: ${_formatRecord(record['personal_records']?['222']?['average']?['best'])}',
+              style: _blueTextStyle,
+            ),
+            SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('WCA-ID: ${AppSettings.wcaId}'),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: widget.onGoToSettings,
+                  child: Text(AppLocale.t(context, 'set_wcaid')),
+                ),
+              ],
+            ),
+            SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: widget.onGoToEasyTwo,
+              child: Text(AppLocale.t(context, 'train_more')),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -14,7 +14,8 @@ class Api {
 
       return jsonDecode(response.body) as Map<String, dynamic>;
     } catch (e) {
-      throw Exception('No internet or request failed');
+      // throw Exception('No internet or request failed');
+      throw Exception('Fehler: $e');
     }
   }
 }

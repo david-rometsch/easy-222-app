@@ -1,0 +1,5 @@
+# This directory is a Syncthing folder marker.
+# Do not delete.
+
+folderID: hbafh-ezigi
+created: 2026-06-19T15:45:11+02:00
