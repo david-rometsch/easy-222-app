@@ -1,0 +1,49 @@
+@startuml inherited-notifier
+
+title AppLocale – InheritedNotifier Localization Flow
+
+skinparam rectangle {
+  BackgroundColor<<notifier>> LightYellow
+  BackgroundColor<<inherited>> LightBlue
+  BackgroundColor<<listener>> LightGreen
+  BackgroundColor<<unchanged>> White
+}
+
+rectangle "ValueNotifier<String>\nlocaleNotifier\n('de' | 'en')" <<notifier>> as VN
+
+rectangle "AppLocale\n(InheritedNotifier)" <<inherited>> as AL
+
+rectangle "MaterialApp" <<unchanged>> as MA
+
+rectangle "MainShell\n(Scaffold)" <<unchanged>> as MS
+
+rectangle "TextButton\n(🇩🇪 / 🇬🇧)\ndependsOn: AppLocale" <<listener>> as TB
+
+rectangle "Drawer ListTiles\ndependsOn: AppLocale" <<listener>> as DL
+
+rectangle "RecordPage\ndependsOn: AppLocale" <<listener>> as RP
+
+rectangle "Settings\ndependsOn: AppLocale" <<listener>> as ST
+
+VN --> AL : notifier
+AL --> MA
+MA --> MS
+MS --> TB
+MS --> DL
+MS --> RP
+MS --> ST
+
+note right of VN
+  localeNotifier.value = 'de'
+  → InheritedNotifier notifies
+  → all dependents rebuild
+  → no setState() needed
+end note
+
+note bottom of AL
+  AppLocale.t(context, 'key')
+  looks up key in localization map
+  for current locale
+end note
+
+@enduml
