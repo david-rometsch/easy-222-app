@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/easy_222.dart';
-import 'screens/222_record.dart';
+import 'screens/record_222.dart';
 import 'screens/settings.dart';
 import 'app_locale.dart';
 
@@ -45,9 +45,9 @@ class _MainShellState extends State<MainShell> {
           ValueListenableBuilder<String>(
             valueListenable: localeNotifier,
             // builder params: context / locale value / child (unused, hence _)
-            builder: (context, _locale, _) => TextButton(
+            builder: (context, locale, _) => TextButton(
               onPressed: () =>
-                  localeNotifier.value = _locale == 'de' ? 'en' : 'de',
+                  localeNotifier.value = locale == 'de' ? 'en' : 'de',
               child: Text(localeNotifier.value == 'de' ? '🇬🇧' : '🇩🇪'),
             ),
           ),

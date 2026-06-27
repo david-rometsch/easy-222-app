@@ -1,6 +1,5 @@
-import 'package:app/screens/222_record.dart';
+import 'package:app/screens/record_222.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:app/app_settings.dart';
 import 'package:app/app_locale.dart';
 
@@ -25,9 +24,8 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: Column(
+    return Center(
+      child: Column(
           children: [
             Text(
               AppLocale.t(context, 'settings'),
@@ -59,7 +57,6 @@ class _SettingsState extends State<Settings> {
             ),
           ],
         ),
-      ),
     );
   }
 }

@@ -473,7 +473,7 @@ class _EasyTwoState extends State<EasyTwo> {
             itemBuilder: (context, index) {
               final r = _records[_records.length - 1 - index];
               return _tableRow(
-                r.nr.toString(),
+                (_records.length - index).toString(),
                 _formatSolve(r.inspectionMs),
                 _formatSolve(r.holdMs),
                 _formatSolve(r.solveMs),
