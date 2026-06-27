@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'l10n.dart';
 
 
-final localeNotfifier = ValueNotifier<String>('en');  // nust be global!
+final localeNotifier = ValueNotifier<String>('en');  // must be global
 
 class AppLocale extends InheritedNotifier<ValueNotifier<String>>  {
   const AppLocale({

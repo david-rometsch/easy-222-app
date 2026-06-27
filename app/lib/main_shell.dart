@@ -25,7 +25,7 @@ class _MainShellState extends State<MainShell> {
 
   @override
   void initState() {
-    super.initState(); // initiation of parentclass
+    super.initState(); // initialize parent state
     _currentScreen = EasyTwo();
   }
 
@@ -43,12 +43,12 @@ class _MainShellState extends State<MainShell> {
         ),
         actions: [
           ValueListenableBuilder<String>(
-            valueListenable: localeNotfifier,
-            // parameter: context, actual value of localeNotfifier(free naming, _ for child optimizwation paameter not widtet!
+            valueListenable: localeNotifier,
+            // builder params: context / locale value / child (unused, hence _)
             builder: (context, _locale, _) => TextButton(
               onPressed: () =>
-                  localeNotfifier.value = _locale == 'de' ? 'en' : 'de',
-              child: Text(localeNotfifier.value == 'de' ? '🇬🇧' : '🇩🇪'),
+                  localeNotifier.value = _locale == 'de' ? 'en' : 'de',
+              child: Text(localeNotifier.value == 'de' ? '🇬🇧' : '🇩🇪'),
             ),
           ),
         ],

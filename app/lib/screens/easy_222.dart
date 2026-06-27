@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:app/csv_download.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:app/get_scramble.dart';
 import 'package:app/app_settings.dart';
 import 'package:shake/shake.dart';
@@ -69,6 +71,7 @@ class _EasyTwoState extends State<EasyTwo> {
       }
     });
     _init();
+    // Accelerometer on Android is a non-dangerous sensor — no runtime permission required.
     _shakeDetector = ShakeDetector.autoStart(
       onPhoneShake: (ShakeEvent event) {
         if (AppSettings.toggleShake) _nextScramble();
@@ -264,6 +267,17 @@ class _EasyTwoState extends State<EasyTwo> {
 
   // ── display ────────────────────────────────────────────────────────────────
 
+  Color get _timerColor {
+    switch (_phase) {
+      case TimerPhase.inspection:
+        return Colors.red;
+      case TimerPhase.holdStart:
+        return Colors.amber;
+      default:
+        return Colors.white;
+    }
+  }
+
   String get _displayTime {
     switch (_phase) {
       case TimerPhase.idle:
@@ -351,7 +365,7 @@ class _EasyTwoState extends State<EasyTwo> {
                         child: Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: _phase != TimerPhase.solve
+                            child: _phase == TimerPhase.idle
                                 ? (_scramble.isEmpty
                                     ? const CircularProgressIndicator()
                                     : Text(
@@ -376,11 +390,11 @@ class _EasyTwoState extends State<EasyTwo> {
                             children: [
                               Text(
                                 _displayTime,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'monospace',
                                   fontWeight: FontWeight.bold,
                                   fontSize: 72,
-                                  color: Colors.white,
+                                  color: _timerColor,
                                 ),
                               ),
                               Text(
@@ -401,8 +415,17 @@ class _EasyTwoState extends State<EasyTwo> {
           Expanded(
             flex: 1,
             child: ColoredBox(
-              color: const Color(0xFF1A237E),
-              child: _buildSolvesTable(),
+              color: Colors.blue,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: ColoredBox(
+                    color: Colors.white,
+                    child: _buildSolvesTable(),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -414,7 +437,7 @@ class _EasyTwoState extends State<EasyTwo> {
     return Column(
       children: [
         ColoredBox(
-          color: const Color(0xFF37474F),
+          color: Colors.grey[100]!,
           child: Row(
             children: [
               Expanded(
@@ -422,28 +445,31 @@ class _EasyTwoState extends State<EasyTwo> {
               ),
               IconButton(
                 onPressed: _exportToCsv,
-                icon: const Icon(Icons.archive, color: Colors.white),
+                icon: Icon(Icons.archive, color: Colors.grey[700]),
                 tooltip: 'Export to CSV',
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
               IconButton(
                 onPressed: _downloadCsv,
-                icon: const Icon(Icons.download, color: Colors.white),
+                icon: Icon(Icons.download, color: Colors.grey[700]),
                 tooltip: 'Download CSV',
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
               IconButton(
                 onPressed: _resetCsv,
-                icon: const Icon(Icons.delete_sweep, color: Colors.white),
+                icon: Icon(Icons.delete_sweep, color: Colors.grey[700]),
                 tooltip: 'Reset CSV',
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
             ],
           ),
         ),
+        const Divider(height: 1, color: Color(0xFFE0E0E0)),
         Expanded(
-          child: ListView.builder(
+          child: ListView.separated(
             itemCount: _records.length,
+            separatorBuilder: (_, _) =>
+                const Divider(height: 1, color: Color(0xFFE0E0E0)),
             itemBuilder: (context, index) {
               final r = _records[_records.length - 1 - index];
               return _tableRow(
@@ -467,12 +493,12 @@ class _EasyTwoState extends State<EasyTwo> {
     bool isHeader = false,
   }) {
     final style = TextStyle(
-      color: Colors.white,
+      color: Colors.grey[800],
       fontFamily: 'monospace',
       fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
     );
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: Row(
         children: [
           SizedBox(width: 40, child: Text(nr, style: style)),

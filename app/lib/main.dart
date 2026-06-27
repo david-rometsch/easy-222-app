@@ -6,16 +6,14 @@ import 'package:app/app_settings.dart';
 
 
 void main() async {
-  // debugPaintSizeEnabled = true;
-  WidgetsFlutterBinding.ensureInitialized(); // makes sure fltter is loaded at this point
-  await AppSettings.init(); 
-
+  WidgetsFlutterBinding.ensureInitialized(); // makes sure Flutter is loaded at this point
+  await AppSettings.init();
 
   runApp(
     AppLocale(
-      notifier: localeNotfifier,
+      notifier: localeNotifier,
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Easy2',
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: ThemeMode.system,

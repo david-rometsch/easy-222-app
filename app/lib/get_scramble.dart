@@ -9,7 +9,6 @@ class GetScramble {
     final response = await rootBundle.loadString(
       'assets/scrambles/two_by_two/222scrambles.json',
     );
-    // debugPrint(jsonDecode(response).toString());
     _scrambleList = jsonDecode(response);
   }
 

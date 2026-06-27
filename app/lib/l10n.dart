@@ -1,7 +1,7 @@
 final localization = {
   'en': {
     'e2_screen': 'Easy2',
-    '222_record': 'Reccord',
+    '222_record': 'Record',
     '222_record_display': 'My actual 2x2 records: ',
     'train_more': 'Train More!',
     'settings': 'Settings',
@@ -10,7 +10,8 @@ final localization = {
     'set_wcaid': 'Set WCA-ID',
     'scr_off_msg':
         'Shake to go to next Scramble is off. Change to "on" if you like to use it in Settings',
-    'no_inet': 'No internet or request failed',
+    'no_inet': 'No internet',
+    'wca_not_found': 'WCA ID not found',
   },
   'de': {
     'e2_screen': 'Easy2',
@@ -23,6 +24,7 @@ final localization = {
     'set_wcaid': 'Gebe WCA-ID ein',
     'scr_off_msg':
         'Schütteln um einen neuen Scramle zu bekommen ist auf "aus". Ändere es in Einstellungen.',
-    'no_inet': 'Keine Internetverbindung oder ungültige ID',
+    'no_inet': 'Keine Internetverbindung',
+    'wca_not_found': 'WCA-ID nicht gefunden',
   },
 };

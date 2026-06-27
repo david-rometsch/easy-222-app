@@ -8,8 +8,6 @@ class Settings extends StatefulWidget {
   final GlobalKey<RecordPageState> recordKey;
   const Settings({
     super.key,
-    final firstStart,
-    final wcaId,
     required this.recordKey,
   });
 
@@ -18,7 +16,7 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  final _wcaIdController = TextEditingController(text: AppSettings.wcaId ?? '');
+  final _wcaIdController = TextEditingController(text: AppSettings.wcaId);
 
   @override
   void initState() {
@@ -28,14 +26,12 @@ class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // color: Colors.blue,
       child: Center(
         child: Column(
           children: [
             Text(
               AppLocale.t(context, 'settings'),
               style: TextStyle(
-                // color: Colors.white,
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
               ),
