@@ -219,9 +219,16 @@ class _EasyTwoState extends State<EasyTwo> {
 
   // ── export / download / reset ──────────────────────────────────────────────
 
-  // appends current table to CSV, clears table — CSV grows across calls
+  bool _isExporting = false;
+
+  // moves current table to CSV (append) — second call while first is in
+  // flight is a no-op; table clears immediately so UI reflects the move
   Future<void> _exportToCsv() async {
-    if (_records.isEmpty) return;
+    if (_records.isEmpty || _isExporting) return;
+    _isExporting = true;
+    final toWrite = List<SolveRecord>.from(_records);
+    setState(() => _records.clear());
+    _saveRecordsToHive();
     try {
       final dir = await getApplicationDocumentsDirectory();
       final file = File('${dir.path}/easy2_solves.csv');
@@ -229,12 +236,13 @@ class _EasyTwoState extends State<EasyTwo> {
         await file.writeAsString('nr,inspection_ms,hold_ms,solve_ms\n');
       }
       await file.writeAsString(
-        _records.map((r) => r.toCsvRow()).join(),
+        toWrite.map((r) => r.toCsvRow()).join(),
         mode: FileMode.append,
       );
-      setState(() => _records.clear());
-      _saveRecordsToHive();
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      _isExporting = false;
+    }
   }
 
   // shares the CSV file without touching it
