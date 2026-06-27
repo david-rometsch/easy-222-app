@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:app/get_scramble.dart';
@@ -56,7 +57,10 @@ class _EasyTwoState extends State<EasyTwo> {
   int _pendingInspMs = 0;
   int _pendingHoldMs = 0;
 
+  // persisted via Hive; nr counter never resets so CSV rows stay unique across exports
+  late Box _solvesBox;
   final List<SolveRecord> _records = [];
+  int _nextNr = 1;
 
   @override
   void initState() {
@@ -116,13 +120,42 @@ class _EasyTwoState extends State<EasyTwo> {
   }
 
   Future<void> _init() async {
+    _solvesBox = await Hive.openBox('solves');
+    _loadRecordsFromHive();
     await _scrambler.loadData();
     _nextScramble();
+  }
+
+  void _loadRecordsFromHive() {
+    _nextNr = (_solvesBox.get('next_nr', defaultValue: 1) as num).toInt();
+    final raw = _solvesBox.get('records', defaultValue: <dynamic>[]);
+    if (raw is! List || raw.isEmpty) return;
+    setState(() {
+      _records.clear();
+      for (final e in raw) {
+        if (e is List && e.length >= 4) {
+          _records.add(SolveRecord(
+            nr: (e[0] as num).toInt(),
+            inspectionMs: (e[1] as num).toInt(),
+            holdMs: (e[2] as num).toInt(),
+            solveMs: (e[3] as num).toInt(),
+          ));
+        }
+      }
+    });
   }
 
   Future<void> _nextScramble() async {
     final s = await _scrambler.pickRandomScramble();
     setState(() => _scramble = s);
+  }
+
+  void _saveRecordsToHive() {
+    _solvesBox.put(
+      'records',
+      _records.map((r) => [r.nr, r.inspectionMs, r.holdMs, r.solveMs]).toList(),
+    );
+    _solvesBox.put('next_nr', _nextNr);
   }
 
   // ── state transitions ──────────────────────────────────────────────────────
@@ -168,40 +201,58 @@ class _EasyTwoState extends State<EasyTwo> {
     setState(() => _phase = TimerPhase.inspection);
   }
 
-  Future<void> _finishSolve() async {
+  void _finishSolve() {
     _stopWatchTimer.onStopTimer();
     final record = SolveRecord(
-      nr: _records.length + 1,
+      nr: _nextNr++,
       inspectionMs: _pendingInspMs,
       holdMs: _pendingHoldMs,
       solveMs: _solveMs,
     );
-    // update UI immediately — don't wait for file write
     setState(() {
       _records.add(record);
       _phase = TimerPhase.idle;
     });
     _nextScramble();
-    _appendToCsv(record);
+    _saveRecordsToHive();
   }
 
-  Future<void> _appendToCsv(SolveRecord record) async {
+  // ── export / download / reset ──────────────────────────────────────────────
+
+  // appends current table to CSV, clears table — CSV grows across calls
+  Future<void> _exportToCsv() async {
+    if (_records.isEmpty) return;
     try {
       final dir = await getApplicationDocumentsDirectory();
       final file = File('${dir.path}/easy2_solves.csv');
       if (!await file.exists()) {
         await file.writeAsString('nr,inspection_ms,hold_ms,solve_ms\n');
       }
-      await file.writeAsString(record.toCsvRow(), mode: FileMode.append);
+      await file.writeAsString(
+        _records.map((r) => r.toCsvRow()).join(),
+        mode: FileMode.append,
+      );
+      setState(() => _records.clear());
+      _saveRecordsToHive();
     } catch (_) {}
   }
 
-  Future<void> _exportCsv() async {
+  // shares the CSV file without touching it
+  Future<void> _downloadCsv() async {
     try {
       final dir = await getApplicationDocumentsDirectory();
       final file = File('${dir.path}/easy2_solves.csv');
       if (!await file.exists()) return;
       await Share.shareXFiles([XFile(file.path)]);
+    } catch (_) {}
+  }
+
+  // deletes the CSV file — does not touch the Hive records
+  Future<void> _resetCsv() async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/easy2_solves.csv');
+      if (await file.exists()) await file.delete();
     } catch (_) {}
   }
 
@@ -360,11 +411,25 @@ class _EasyTwoState extends State<EasyTwo> {
           color: const Color(0xFF37474F),
           child: Row(
             children: [
-              Expanded(child: _tableRow('Nr', 'Insp', 'Hold', 'Solve', isHeader: true)),
+              Expanded(
+                child: _tableRow('Nr', 'Insp', 'Hold', 'Solve', isHeader: true),
+              ),
               IconButton(
-                onPressed: _exportCsv,
+                onPressed: _exportToCsv,
+                icon: const Icon(Icons.archive, color: Colors.white),
+                tooltip: 'Export to CSV',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              IconButton(
+                onPressed: _downloadCsv,
                 icon: const Icon(Icons.download, color: Colors.white),
-                tooltip: 'Export CSV',
+                tooltip: 'Download CSV',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              IconButton(
+                onPressed: _resetCsv,
+                icon: const Icon(Icons.delete_sweep, color: Colors.white),
+                tooltip: 'Reset CSV',
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
             ],
