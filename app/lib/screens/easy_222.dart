@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:app/csv_download.dart';
 import 'package:app/get_scramble.dart';
 import 'package:app/app_settings.dart';
 import 'package:shake/shake.dart';
