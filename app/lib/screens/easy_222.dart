@@ -1,10 +1,32 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:app/get_scramble.dart';
 import 'package:app/app_settings.dart';
 import 'package:shake/shake.dart';
 import 'package:app/app_locale.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
+
+enum TimerPhase { idle, inspection, holdStart, solve }
+
+class SolveRecord {
+  final int nr;
+  final int inspectionMs;
+  final int holdMs;
+  final int solveMs;
+
+  const SolveRecord({
+    required this.nr,
+    required this.inspectionMs,
+    required this.holdMs,
+    required this.solveMs,
+  });
+
+  String toCsvRow() => '$nr,$inspectionMs,$holdMs,$solveMs\n';
+}
 
 class EasyTwo extends StatefulWidget {
   const EasyTwo({super.key});
@@ -13,45 +35,45 @@ class EasyTwo extends StatefulWidget {
   State<StatefulWidget> createState() => _EasyTwoState();
 }
 
-enum TimerPhase { idle, solving }
-
 class _EasyTwoState extends State<EasyTwo> {
   final _scrambler = GetScramble();
   String _scramble = '';
   late ShakeDetector _shakeDetector;
+
+  TimerPhase _phase = TimerPhase.idle;
+
+  // inspection and hold run simultaneously during holdStart; both stop at _startSolve
+  final _inspectionWatch = Stopwatch();
+  final _holdWatch = Stopwatch();
+  StreamSubscription<void>? _inspectionTick;
+
+  // solve timing via package stream
   final StopWatchTimer _stopWatchTimer = StopWatchTimer();
-  TimerPhase _timerPhase = TimerPhase.idle;
+  late StreamSubscription<int> _solveSub;
+  int _solveMs = 0;
 
-  Future<void> _nextScramble() async {
-    final s = await _scrambler.pickRandomScramble();
-    setState(() => _scramble = s);
-  }
+  // captured at the moment finger lifts (holdStart → solve)
+  int _pendingInspMs = 0;
+  int _pendingHoldMs = 0;
 
-  String formatTime(double sec) {
-    final hr = sec /~ 3600;
-    final min = (sec % 3600) /~ 60;
-    final s= sec % 60;  
-
-    if (hr > 0) return '$hr:$min:$s';
-    if (min > 0) return '$min:$s';
-    return '$s';
-  } 
+  final List<SolveRecord> _records = [];
 
   @override
   void initState() {
     super.initState();
-
+    _solveSub = _stopWatchTimer.rawTime.listen((ms) {
+      if (_phase == TimerPhase.solve) {
+        setState(() => _solveMs = ms);
+      }
+    });
     _init();
     _shakeDetector = ShakeDetector.autoStart(
       onPhoneShake: (ShakeEvent event) {
-        if (AppSettings.toggleShake) {
-          _nextScramble();
-        }
+        if (AppSettings.toggleShake) _nextScramble();
       },
-      shakeThresholdGravity:
-          1.1, // sensitivity - lower value makes it more sensitive
-      shakeSlopTimeMS: 300, // Minimum time between shake detections (ms)
-      minimumShakeCount: 1, //  Reset shake count after this time (ms)
+      shakeThresholdGravity: 1.1,
+      shakeSlopTimeMS: 300,
+      minimumShakeCount: 1,
     );
     if (!AppSettings.toggleShake &&
         AppSettings.firstStart &&
@@ -69,18 +91,14 @@ class _EasyTwoState extends State<EasyTwo> {
   @override
   void didUpdateWidget(covariant EasyTwo oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     _restartShakeDetector();
   }
 
   void _restartShakeDetector() {
     _shakeDetector.stopListening();
-
     _shakeDetector = ShakeDetector.autoStart(
       onPhoneShake: (event) {
-        if (AppSettings.toggleShake) {
-          _nextScramble();
-        }
+        if (AppSettings.toggleShake) _nextScramble();
       },
       shakeThresholdGravity: 1.1,
       shakeSlopTimeMS: 300,
@@ -90,9 +108,11 @@ class _EasyTwoState extends State<EasyTwo> {
 
   @override
   void dispose() {
-    super.dispose();
     _shakeDetector.stopListening();
+    _inspectionTick?.cancel();
+    _solveSub.cancel();
     _stopWatchTimer.dispose();
+    super.dispose();
   }
 
   Future<void> _init() async {
@@ -100,72 +120,295 @@ class _EasyTwoState extends State<EasyTwo> {
     _nextScramble();
   }
 
+  Future<void> _nextScramble() async {
+    final s = await _scrambler.pickRandomScramble();
+    setState(() => _scramble = s);
+  }
+
+  // ── state transitions ──────────────────────────────────────────────────────
+
+  void _startInspection() {
+    _inspectionWatch.reset();
+    _inspectionWatch.start();
+    _inspectionTick?.cancel();
+    // periodic rebuild so inspection display stays live
+    _inspectionTick = Stream<void>.periodic(const Duration(milliseconds: 16))
+        .listen((_) {
+      if (mounted) setState(() {});
+    });
+    setState(() => _phase = TimerPhase.inspection);
+  }
+
+  void _startHold() {
+    _holdWatch.reset();
+    _holdWatch.start();
+    setState(() => _phase = TimerPhase.holdStart);
+  }
+
+  void _startSolve() {
+    // capture both at the exact same moment before stopping either
+    _pendingInspMs = _inspectionWatch.elapsedMilliseconds;
+    _pendingHoldMs = _holdWatch.elapsedMilliseconds;
+    _inspectionWatch.stop();
+    _holdWatch.stop();
+    _inspectionTick?.cancel();
+    _inspectionTick = null;
+
+    _stopWatchTimer.onStopTimer();
+    _stopWatchTimer.onResetTimer();
+    _stopWatchTimer.onStartTimer();
+    setState(() {
+      _solveMs = 0;
+      _phase = TimerPhase.solve;
+    });
+  }
+
+  void _cancelHold() {
+    _holdWatch.stop();
+    setState(() => _phase = TimerPhase.inspection);
+  }
+
+  Future<void> _finishSolve() async {
+    _stopWatchTimer.onStopTimer();
+    final record = SolveRecord(
+      nr: _records.length + 1,
+      inspectionMs: _pendingInspMs,
+      holdMs: _pendingHoldMs,
+      solveMs: _solveMs,
+    );
+    // update UI immediately — don't wait for file write
+    setState(() {
+      _records.add(record);
+      _phase = TimerPhase.idle;
+    });
+    _nextScramble();
+    _appendToCsv(record);
+  }
+
+  Future<void> _appendToCsv(SolveRecord record) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/easy2_solves.csv');
+      if (!await file.exists()) {
+        await file.writeAsString('nr,inspection_ms,hold_ms,solve_ms\n');
+      }
+      await file.writeAsString(record.toCsvRow(), mode: FileMode.append);
+    } catch (_) {}
+  }
+
+  Future<void> _exportCsv() async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/easy2_solves.csv');
+      if (!await file.exists()) return;
+      await Share.shareXFiles([XFile(file.path)]);
+    } catch (_) {}
+  }
+
+  // ── display ────────────────────────────────────────────────────────────────
+
+  String get _displayTime {
+    switch (_phase) {
+      case TimerPhase.idle:
+        return _formatSolve(_solveMs);
+      case TimerPhase.inspection:
+      case TimerPhase.holdStart:
+        return (_inspectionWatch.elapsedMilliseconds ~/ 1000).toString();
+      case TimerPhase.solve:
+        return _formatSolve(_solveMs);
+    }
+  }
+
+  // minimal digits: 3.42 or 1:03.42
+  String _formatSolve(int ms) {
+    final cs = (ms ~/ 10) % 100;
+    final totalS = ms ~/ 1000;
+    final s = totalS % 60;
+    final m = totalS ~/ 60;
+    final csStr = cs.toString().padLeft(2, '0');
+    return m > 0 ? '$m:${s.toString().padLeft(2, '0')}.$csStr' : '$s.$csStr';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Focus(
-      // return to widget tree
       autofocus: true,
       onKeyEvent: (node, event) {
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
+            event is KeyDownEvent) {
           _nextScramble();
-          return KeyEventResult.handled; // return to event-system
+          return KeyEventResult.handled;
+        }
+        if (event.logicalKey == LogicalKeyboardKey.space) {
+          if (event is KeyDownEvent) {
+            switch (_phase) {
+              case TimerPhase.idle:
+                _startInspection();
+              case TimerPhase.inspection:
+                _startHold();
+              case TimerPhase.solve:
+                _finishSolve();
+              case TimerPhase.holdStart:
+                break;
+            }
+            return KeyEventResult.handled;
+          }
+          if (event is KeyUpEvent && _phase == TimerPhase.holdStart) {
+            _startSolve();
+            return KeyEventResult.handled;
+          }
         }
         return KeyEventResult.ignored;
       },
-      child: GestureDetector(
-        onTap: () {
-          switch (_timerPhase) {
-            case TimerPhase.idle:
-              _stopWatchTimer.onStartTimer();
-              _timerPhase = TimerPhase.solving;
-            case TimerPhase.solving:
-              _stopWatchTimer.onStopTimer();
-              _timerPhase = TimerPhase.idle;
-              _nextScramble();
-          }
-        },
-        child: Container(
-          color: Colors.blue,
-          child: Column(
-            children: [
-              Center(
-                child: _scramble.isEmpty
-                    ? CircularProgressIndicator()
-                    : Text(
-                        _scramble,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
+      child: Column(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Listener(
+              onPointerDown: (_) {
+                switch (_phase) {
+                  case TimerPhase.idle:
+                    _startInspection();
+                  case TimerPhase.inspection:
+                    _startHold();
+                  case TimerPhase.solve:
+                    _finishSolve();
+                  case TimerPhase.holdStart:
+                    break;
+                }
+              },
+              onPointerUp: (_) {
+                if (_phase == TimerPhase.holdStart) _startSolve();
+              },
+              onPointerCancel: (_) {
+                if (_phase == TimerPhase.holdStart) _cancelHold();
+              },
+              child: ColoredBox(
+                color: Colors.blue,
+                child: SizedBox.expand(
+                  child: Column(
+                    children: [
+                      // top 1/4: scramble
+                      Expanded(
+                        flex: 1,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: _phase != TimerPhase.solve
+                                ? (_scramble.isEmpty
+                                    ? const CircularProgressIndicator()
+                                    : Text(
+                                        _scramble,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 48,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ))
+                                : const SizedBox.shrink(),
+                          ),
                         ),
                       ),
-              ),
-              StreamBuilder<int>(
-                stream: _stopWatchTimer.rawTime,
-                initialData: 0,
-                builder: (context, snap) {
-                  final rawTime = snap.data ?? 0;
-                  // final displayTime = StopWatchTimer.getDisplayTime(value);
-                  return Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Text(
-                          formatTime(rawTime / 1000),
-                          style: const TextStyle(
-                            fontFamily: 'monospace',
-                            fontWeight: FontWeight.bold,
+                      // remaining 3/4: timer
+                      Expanded(
+                        flex: 3,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _displayTime,
+                                style: const TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 72,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                _phase.name.toUpperCase(),
+                                style: const TextStyle(
+                                    fontSize: 20, color: Colors.grey),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ],
-                  );
-                },
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: ColoredBox(
+              color: const Color(0xFF1A237E),
+              child: _buildSolvesTable(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSolvesTable() {
+    return Column(
+      children: [
+        ColoredBox(
+          color: const Color(0xFF37474F),
+          child: Row(
+            children: [
+              Expanded(child: _tableRow('Nr', 'Insp', 'Hold', 'Solve', isHeader: true)),
+              IconButton(
+                onPressed: _exportCsv,
+                icon: const Icon(Icons.download, color: Colors.white),
+                tooltip: 'Export CSV',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
             ],
           ),
         ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _records.length,
+            itemBuilder: (context, index) {
+              final r = _records[_records.length - 1 - index];
+              return _tableRow(
+                r.nr.toString(),
+                _formatSolve(r.inspectionMs),
+                _formatSolve(r.holdMs),
+                _formatSolve(r.solveMs),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tableRow(
+    String nr,
+    String insp,
+    String hold,
+    String solve, {
+    bool isHeader = false,
+  }) {
+    final style = TextStyle(
+      color: Colors.white,
+      fontFamily: 'monospace',
+      fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(width: 40, child: Text(nr, style: style)),
+          Expanded(child: Text(insp, style: style)),
+          Expanded(child: Text(hold, style: style)),
+          Expanded(child: Text(solve, style: style)),
+        ],
       ),
     );
   }
