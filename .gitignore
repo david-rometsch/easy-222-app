@@ -6,3 +6,7 @@ package.json
 scramble/test.js
 docs/presentation/
 docs/module/
+.stfolder/
+docs/puml/
+docs/checklist.md
+docs/timer-draft.md
