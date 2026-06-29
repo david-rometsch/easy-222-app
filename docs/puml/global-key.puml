@@ -2,34 +2,17 @@
 
 title GlobalKey – Cross-Widget State Access
 
-skinparam participant {
-  BackgroundColor<<key>> LightYellow
-}
-
 participant "MainShell" as MS
-participant "_recordKey\nGlobalKey<RecordPageState>" as GK <<key>>
 participant "RecordPage" as RP
 participant "Settings" as ST
 
-MS -> GK : create
-MS -> RP : key: _recordKey\nonGoToEasyTwo / onGoToSettings
+MS -> RP : key: _recordKey
 MS -> ST : recordKey: _recordKey
 
-note over GK
-  GlobalKey gives direct access
-  to a specific widget's State
-  anywhere in the tree
-end note
+/'== WCA-ID updated in Settings =='/
+ST -> ST : update wca-id in settings
 
-== User types new WCA-ID in Settings ==
-
-ST -> GK : recordKey.currentState?.setState((){})
-GK -> RP : triggers rebuild of RecordPageState
-RP -> RP : _getWcaData()\n(fetches new WCA-ID from AppSettings)
-
-== User opens Record screen from closed ==
-
-MS -> RP : new RecordPage(key: _recordKey, ...)
-note right : key ensures Flutter reuses\nthe same State instance
+ST -> RP : recordKey.currentState?.setState((){})
+RP -> RP : _getWcaData()
 
 @enduml

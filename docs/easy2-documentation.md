@@ -28,15 +28,19 @@ widget(
 - TimerPhase-Enum: `idle → inspection → holdStart → solve`
 - `Listener` statt `GestureDetector`: Pointer-Events sofort, kein Delay
 
+![Timer States](diagrams/timer-states.svg)
+
 ## InheritedNotifier
 - `AppLocale` auf Top-Level: alle Listener-Widgets darunter updaten automatisch
 - `localeNotifier.value = 'de'` → rebuild ohne setState
-- → Diagramm: `../puml/inherited-notifier.puml`
+
+![InheritedNotifier](diagrams/inherited-notifier.svg)
 
 ## GlobalKey
 - direkter Zugriff auf State eines anderen Widgets
 - Beispiel: WCA-ID in Settings aendern → RecordPage laedt sofort neu
-- → Diagramm: `../puml/global-key.puml`
+
+![GlobalKey](diagrams/global-key.svg)
 
 ---
 
