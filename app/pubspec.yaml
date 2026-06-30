@@ -37,6 +37,7 @@ flutter:
   assets:
     - assets/images/
     - assets/scrambles/two_by_two/
+    - assets/scrambles/three_by_three/
 
 flutter_launcher_icons:
   android: true
