@@ -1,20 +1,20 @@
-# Usecase – warum Easy2?
-- persoenliches Interesse am Prozess: 2x2 hat viele Zufallsloesungen
-- einfache Scrambles → One-Looking trainieren (Wettkampf-Scrambles zu lang)
-- Timer misst Inspection & Hold gleichzeitig → Datenbasis fuer DNF-Analyse
-- CSV-Export: kurze Holds (< 550 ms) = DNF → in Excel/Python auswertbar
+# Usecase – why Easy2?
+- personal interest in the process: 2x2 has many random solutions
+- simple scrambles → train One-Looking (competition scrambles too long)
+- timer measures Inspection & Hold simultaneously → data basis for DNF analysis
+- CSV export: short holds (< 550 ms) = DNF → analyzable in Excel/Python
 
 ---
 
-# Flutter als Vermittler fuer Plattformen
-- Embedder vermittelt zwischen App und Plattform – all in one
-- ein Codebase → Android, iOS, Desktop
+# Flutter as a Platform Mediator
+- Embedder mediates between app and platform – all in one
+- one codebase → Android, iOS, Desktop
 
-## Dart als typensichere Sprache
-- hilft Ueberblick zu halten
-- Null Safety: kein unerwartetes null zur Laufzeit
+## Dart as a Type-Safe Language
+- helps maintain overview
+- Null Safety: no unexpected null at runtime
 
-## Widget Tree Hierarchie
+## Widget Tree Hierarchy
 ```
 widget(
   child: widget2(
@@ -22,70 +22,70 @@ widget(
   )
 )
 ```
-- oft von innen nach aussen entwickelt: `Center(..)` als Wrapper → zentriert
+- often developed from inside out: `Center(..)` as wrapper → centers content
 
 ## StatefulWidget & State Machine
-- TimerPhase-Enum: `idle → inspection → holdStart → solve`
-- `Listener` statt `GestureDetector`: Pointer-Events sofort, kein Delay
+- TimerPhase enum: `idle → inspection → holdStart → solve`
+- `Listener` instead of `GestureDetector`: pointer events immediately, no delay
 
 ![Timer States](diagrams/timer-states.svg)
 
 ## InheritedNotifier
-- `AppLocale` auf Top-Level: alle Listener-Widgets darunter updaten automatisch
-- `localeNotifier.value = 'de'` → rebuild ohne setState
+- `AppLocale` at top level: all listener widgets below update automatically
+- `localeNotifier.value = 'de'` → rebuild without setState
 
 ![InheritedNotifier](diagrams/inherited-notifier.svg)
 
 ## GlobalKey
-- direkter Zugriff auf State eines anderen Widgets
-- Beispiel: WCA-ID in Settings aendern → RecordPage laedt sofort neu
+- direct access to another widget's State
+- example: changing WCA-ID in Settings → RecordPage reloads immediately
 
 ![GlobalKey](diagrams/global-key.svg)
 
 ---
 
-# Umgesetzte Features
+# Implemented Features
 
-## API & Fehlerbehandlung (KT3)
-- WCA-REST-API: Single & Ao5 laden
-- Content-Type-Header pruefen, 404 separat behandelt
-- 3 UI-Zustaende: Laden / Fehler / Daten
+## API & Error Handling (KT3)
+- WCA REST API: load Single & Ao5
+- check Content-Type header, handle 404 separately
+- 3 UI states: loading / error / data
 
 ## Sensor Access (KT4)
-- Shake-to-Scramble via Accelerometer-Stream
-- Accelerometer = kein Runtime-Permission noetig (non-dangerous sensor)
-- on/off Toggle in Settings
+- Shake-to-Scramble via accelerometer stream
+- Accelerometer = no runtime permission needed (non-dangerous sensor)
+- on/off toggle in Settings
 
 ## Internationalization
-- DE/EN, zur Laufzeit umschaltbar via InheritedNotifier
+- DE/EN, switchable at runtime via InheritedNotifier
 
-## Persistenz
-- Hive: Session-Tabelle + Einstellungen ueberleben Neustart
-- Solve-Zaehler resettet nie → CSV-Zeilen bleiben eindeutig
+## Persistence
+- Hive: session table + settings survive restart
+- solve counter never resets → CSV rows stay unique
 
 ---
 
-# Technologie
+# Technology
 
 ## Theming
-- `flex_color_scheme`-Package – inkl. Dev-Template als Ausgangsbasis
+- `flex_color_scheme` package – including dev template as starting point
 - Light & Dark Mode
 
 ## Packages (pub.dev)
 - `hive_flutter`, `stop_watch_timer`, `shake`, `share_plus`, `http`, `flex_color_scheme`
-- `flutter pub add <lib>` und `flutter doctor` – gut durchdacht
+- `flutter pub add <lib>` and `flutter doctor` – well thought out
 
 ---
 
 # Learnings
-- Listener > GestureDetector fuer praezise Touch-Messung
-- zwei Stopwatches gleichzeitig lesen = atomarer Snapshot
-- InheritedNotifier eleganter als setState fuer globalen State
+- Listener > GestureDetector for precise touch measurement
+- reading two stopwatches simultaneously = atomic snapshot
+- InheritedNotifier more elegant than setState for global state
 
 ---
 
-# Fazit
-- praktisch: all in one, ein Codebase
-- logischer und kompakter als HTML/CSS/JS
-- viel zu lernen am Anfang – aber wenn man es intus hat, kann man schnell was Gutes machen
-- plane Flutter fuer kuenftige Projekte einzusetzen
+# Conclusion
+- practical: all in one, one codebase
+- more logical and compact than HTML/CSS/JS
+- a lot to learn at first – but once you get it, you can build something good fast
+- planning to use Flutter for future projects
