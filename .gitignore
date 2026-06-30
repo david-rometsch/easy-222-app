@@ -4,8 +4,13 @@ node_modules/
 package-lock.json
 package.json
 scramble/test.js
+scramble/scramble-333.js
+scramble/333scrambles.json
+scramble/scrambles.txt
 docs/module/
 .stfolder/
 docs/puml/
 docs/checklist.md
 docs/timer-draft.md
+.obsidian/ 
+
