@@ -37,7 +37,7 @@ Easy-222 is a non-WCA-conform training timer with two goals:
 
 ## Download
 
-[easy2-release.apk](easy2-release.apk) — Android release build (sideload, no Play Store)
+[easy2.apk](https://github.com/teko-TIA23/rometsch-mobile-app/releases/tag/v1.1.0) — Android release build (sideload, no Play Store)
 
 ## Run from source
 
