@@ -1,6 +1,6 @@
 # following page: https://dart.dev/tools/pub/pubspec
 name: app
-description: "A new Flutter project."
+description: "2x2 1-Looking-Trainer"
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 version: 1.0.0+1

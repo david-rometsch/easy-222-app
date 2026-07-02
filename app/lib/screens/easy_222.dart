@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -18,15 +20,23 @@ class SolveRecord {
   final int inspectionMs;
   final int holdMs;
   final int solveMs;
+  final int solvedAtEpochS;
 
   const SolveRecord({
     required this.nr,
     required this.inspectionMs,
     required this.holdMs,
     required this.solveMs,
+    required this.solvedAtEpochS,
   });
 
-  String toCsvRow() => '$nr,$inspectionMs,$holdMs,$solveMs\n';
+  String toCsvRow() {
+    final ts = DateTime.fromMillisecondsSinceEpoch(solvedAtEpochS * 1000)
+        .toIso8601String()
+        .split('.')
+        .first;
+    return '$nr,$inspectionMs,$holdMs,$solveMs,$ts\n';
+  }
 }
 
 class EasyTwo extends StatefulWidget {
@@ -56,6 +66,12 @@ class _EasyTwoState extends State<EasyTwo> {
   // captured at the moment finger lifts (holdStart → solve)
   int _pendingInspMs = 0;
   int _pendingHoldMs = 0;
+
+  // guards against a second finger (from a stop-tap using 2 fingers)
+  // immediately re-triggering inspection right after a solve finishes
+  DateTime? _idleLockedUntil;
+  bool get _idleLocked =>
+      _idleLockedUntil != null && DateTime.now().isBefore(_idleLockedUntil!);
 
   // persisted via Hive; nr counter never resets so CSV rows stay unique across exports
   late Box _solvesBox;
@@ -140,6 +156,7 @@ class _EasyTwoState extends State<EasyTwo> {
             inspectionMs: (e[1] as num).toInt(),
             holdMs: (e[2] as num).toInt(),
             solveMs: (e[3] as num).toInt(),
+            solvedAtEpochS: e.length >= 5 ? (e[4] as num).toInt() : 0,
           ));
         }
       }
@@ -154,7 +171,10 @@ class _EasyTwoState extends State<EasyTwo> {
   void _saveRecordsToHive() {
     _solvesBox.put(
       'records',
-      _records.map((r) => [r.nr, r.inspectionMs, r.holdMs, r.solveMs]).toList(),
+      _records
+          .map((r) =>
+              [r.nr, r.inspectionMs, r.holdMs, r.solveMs, r.solvedAtEpochS])
+          .toList(),
     );
     _solvesBox.put('next_nr', _nextNr);
   }
@@ -209,11 +229,15 @@ class _EasyTwoState extends State<EasyTwo> {
       inspectionMs: _pendingInspMs,
       holdMs: _pendingHoldMs,
       solveMs: _solveMs,
+      solvedAtEpochS: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
     setState(() {
       _records.add(record);
       _phase = TimerPhase.idle;
     });
+    // a second finger landing a beat after the stop-tap must not be read as
+    // "start inspection again" — block idle taps briefly after finishing.
+    _idleLockedUntil = DateTime.now().add(const Duration(seconds: 1));
     _nextScramble();
     _saveRecordsToHive();
   }
@@ -222,8 +246,12 @@ class _EasyTwoState extends State<EasyTwo> {
 
   bool _isExporting = false;
 
+  static const _csvHeader = 'nr,inspection_ms,hold_ms,solve_ms,solved_at\n';
+
   // moves current table to CSV (append) — second call while first is in
-  // flight is a no-op; table clears immediately so UI reflects the move
+  // flight is a no-op; table clears immediately so UI reflects the move.
+  // web has no filesystem, so the accumulated CSV text lives in Hive instead
+  // of a real file there; every other platform keeps writing the real file.
   Future<void> _exportToCsv() async {
     if (_records.isEmpty || _isExporting) return;
     _isExporting = true;
@@ -231,10 +259,21 @@ class _EasyTwoState extends State<EasyTwo> {
     setState(() => _records.clear());
     _saveRecordsToHive();
     try {
+      if (kIsWeb) {
+        final existing =
+            _solvesBox.get('csv_export', defaultValue: '') as String;
+        final buffer = StringBuffer(existing);
+        if (existing.isEmpty) buffer.write(_csvHeader);
+        for (final r in toWrite) {
+          buffer.write(r.toCsvRow());
+        }
+        await _solvesBox.put('csv_export', buffer.toString());
+        return;
+      }
       final dir = await getApplicationDocumentsDirectory();
       final file = File('${dir.path}/easy2_solves.csv');
       if (!await file.exists()) {
-        await file.writeAsString('nr,inspection_ms,hold_ms,solve_ms\n');
+        await file.writeAsString(_csvHeader);
       }
       await file.writeAsString(
         toWrite.map((r) => r.toCsvRow()).join(),
@@ -246,19 +285,55 @@ class _EasyTwoState extends State<EasyTwo> {
     }
   }
 
-  // shares the CSV file without touching it
+  // makes the exported CSV available to the user without touching it.
+  // - Android/iOS: native share sheet (unchanged).
+  // - web: share_plus has no filesystem to read from, so the CSV bytes are
+  //   handed to it directly; it falls back to a browser download when the
+  //   Web Share API isn't available (desktop browsers).
+  // - other desktop (Linux/macOS/Windows): share_plus has no share
+  //   implementation there (Linux throws UnimplementedError), so the file is
+  //   copied into the platform Downloads folder instead.
   Future<void> _downloadCsv() async {
     try {
+      if (kIsWeb) {
+        final csv = _solvesBox.get('csv_export') as String?;
+        if (csv == null || csv.isEmpty) return;
+        Share.downloadFallbackEnabled = true;
+        await Share.shareXFiles([
+          XFile.fromData(
+            Uint8List.fromList(utf8.encode(csv)),
+            name: 'easy2_solves.csv',
+            mimeType: 'text/csv',
+          ),
+        ]);
+        return;
+      }
       final dir = await getApplicationDocumentsDirectory();
       final file = File('${dir.path}/easy2_solves.csv');
       if (!await file.exists()) return;
-      await Share.shareXFiles([XFile(file.path)]);
+      if (Platform.isAndroid || Platform.isIOS) {
+        await Share.shareXFiles([XFile(file.path)]);
+        return;
+      }
+      final downloadsDir = await getDownloadsDirectory();
+      if (downloadsDir == null) return;
+      final dest = await file.copy('${downloadsDir.path}/easy2_solves.csv');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gespeichert: ${dest.path}')),
+        );
+      }
     } catch (_) {}
   }
 
-  // deletes the CSV file — does not touch the Hive records
+  // deletes the CSV file (or, on web, the Hive-backed CSV text) — does not
+  // touch the Hive solve records.
   Future<void> _resetCsv() async {
     try {
+      if (kIsWeb) {
+        await _solvesBox.delete('csv_export');
+        return;
+      }
       final dir = await getApplicationDocumentsDirectory();
       final file = File('${dir.path}/easy2_solves.csv');
       if (await file.exists()) await file.delete();
@@ -314,6 +389,7 @@ class _EasyTwoState extends State<EasyTwo> {
           if (event is KeyDownEvent) {
             switch (_phase) {
               case TimerPhase.idle:
+                if (_idleLocked) break;
                 _startInspection();
               case TimerPhase.inspection:
                 _startHold();
@@ -339,6 +415,7 @@ class _EasyTwoState extends State<EasyTwo> {
               onPointerDown: (_) {
                 switch (_phase) {
                   case TimerPhase.idle:
+                    if (_idleLocked) break;
                     _startInspection();
                   case TimerPhase.inspection:
                     _startHold();
@@ -478,17 +555,64 @@ class _EasyTwoState extends State<EasyTwo> {
                 const Divider(height: 1, color: Color(0xFFE0E0E0)),
             itemBuilder: (context, index) {
               final r = _records[_records.length - 1 - index];
-              return _tableRow(
-                (_records.length - index).toString(),
-                _formatSolve(r.inspectionMs),
-                _formatSolve(r.holdMs),
-                _formatSolve(r.solveMs),
+              return Dismissible(
+                key: ValueKey(r.nr),
+                direction: DismissDirection.horizontal,
+                background: _deleteSwipeBackground(Alignment.centerLeft),
+                secondaryBackground:
+                    _deleteSwipeBackground(Alignment.centerRight),
+                confirmDismiss: (_) => _confirmDeleteRecord(r),
+                onDismissed: (_) => _deleteRecord(r),
+                child: _tableRow(
+                  (_records.length - index).toString(),
+                  _formatSolve(r.inspectionMs),
+                  _formatSolve(r.holdMs),
+                  _formatSolve(r.solveMs),
+                ),
               );
             },
           ),
         ),
       ],
     );
+  }
+
+  Widget _deleteSwipeBackground(Alignment alignment) {
+    return Container(
+      color: Colors.red,
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: const Icon(Icons.delete, color: Colors.white),
+    );
+  }
+
+  Future<bool> _confirmDeleteRecord(SolveRecord r) async {
+    final body = AppLocale.t(context, 'delete_solve_body')
+        .replaceAll('{nr}', r.nr.toString())
+        .replaceAll('{time}', _formatSolve(r.solveMs));
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocale.t(context, 'delete_solve_title')),
+        content: Text(body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppLocale.t(context, 'cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(AppLocale.t(context, 'delete')),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
+  }
+
+  void _deleteRecord(SolveRecord r) {
+    setState(() => _records.removeWhere((e) => e.nr == r.nr));
+    _saveRecordsToHive();
   }
 
   Widget _tableRow(

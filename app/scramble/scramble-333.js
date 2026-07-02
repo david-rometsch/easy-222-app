@@ -9,10 +9,13 @@ if (process.argv[1].endsWith("scramble-333.js")) {
   process.stderr.write = () => true;
   (async () => {
     console.log("[")
-    for (let i = 0; i < 1000; i++) {
+    let scrLen = 1000;
+    for (let i = 0; i < scrLen - 1; i++) {
       const s = await wcaScramble("333");
       console.log(`"${s.toString()}",`);
     }
+    const s = await wcaScramble("333");
+    console.log(`"${s.toString()}"`);
     console.log("]")
   })();
 }

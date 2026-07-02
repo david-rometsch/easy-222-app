@@ -97,8 +97,16 @@ export async function scramble(scrambleType) {
 }
 
 
-if (process.argv[1].endsWith("scramble.js")) {
-  for (let i = 0; i < 1000; i++) {
-    scramble(scrambleType).then((s) => console.log(s.toString()));
-  }
+if (process.argv[1].endsWith("scramble-222.js")) {
+  (async () => {
+    console.log("[")
+    let scrLen = 1000;
+    for (let i = 0; i < scrLen - 1; i++) {
+      const s = await scramble(scrambleType);
+      console.log(`"${s.toString()}",`);
+    }
+    const s = await scramble(scrambleType);
+    console.log(`"${s.toString()}"`);
+    console.log("]")
+  })();
 }

@@ -3,7 +3,7 @@ import { rotate } from "./rotate.js";
 import { experimentalSolve2x2x2 } from "cubing/search";
 import { KPattern } from "cubing/kpuzzle";
 
-import { permute, orient, solvedCubeState, fixPairity, cubeStateToK} from './scramble.js';
+import { permute, orient, solvedCubeState, fixPairity, cubeStateToK} from './scramble-222.js';
 import { scrambleTypes } from './scramble-definition.js';
 
 

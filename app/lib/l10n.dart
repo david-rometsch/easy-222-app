@@ -12,6 +12,10 @@ final localization = {
         'Shake to go to next Scramble is off. Change to "on" if you like to use it in Settings',
     'no_inet': 'No internet',
     'wca_not_found': 'WCA ID not found',
+    'delete_solve_title': 'Delete solve?',
+    'delete_solve_body': 'Solve #{nr} ({time}) will be removed.',
+    'cancel': 'Cancel',
+    'delete': 'Delete',
   },
   'de': {
     'e2_screen': 'Easy2',
@@ -26,5 +30,9 @@ final localization = {
         'Schütteln um einen neuen Scramle zu bekommen ist auf "aus". Ändere es in Einstellungen.',
     'no_inet': 'Keine Internetverbindung',
     'wca_not_found': 'WCA-ID nicht gefunden',
+    'delete_solve_title': 'Solve löschen?',
+    'delete_solve_body': 'Solve #{nr} ({time}) wird entfernt.',
+    'cancel': 'Abbrechen',
+    'delete': 'Löschen',
   },
 };
