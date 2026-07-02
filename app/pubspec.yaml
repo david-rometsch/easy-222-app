@@ -42,7 +42,8 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/cube.jpg"
+  image_path: "assets/images/cube.webp"
+  remove_alpha_ios: true
 
   # To add custom fonts to your application, add a fonts section here,
   # see https://flutter.dev/to/font-from-package

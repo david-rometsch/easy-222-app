@@ -438,29 +438,35 @@ class _EasyTwoState extends State<EasyTwo> {
       children: [
         ColoredBox(
           color: Colors.grey[100]!,
-          child: Row(
+          child: Column(
             children: [
-              Expanded(
-                child: _tableRow('Nr', 'Insp', 'Hold', 'Solve', isHeader: true),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: _exportToCsv,
+                    icon: Icon(Icons.archive, color: Colors.grey[700]),
+                    tooltip: 'Export to CSV',
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  IconButton(
+                    onPressed: _downloadCsv,
+                    icon: Icon(Icons.download, color: Colors.grey[700]),
+                    tooltip: 'Download CSV',
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  IconButton(
+                    onPressed: _resetCsv,
+                    icon: Icon(Icons.delete_sweep, color: Colors.grey[700]),
+                    tooltip: 'Reset CSV',
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                ],
               ),
-              IconButton(
-                onPressed: _exportToCsv,
-                icon: Icon(Icons.archive, color: Colors.grey[700]),
-                tooltip: 'Export to CSV',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-              ),
-              IconButton(
-                onPressed: _downloadCsv,
-                icon: Icon(Icons.download, color: Colors.grey[700]),
-                tooltip: 'Download CSV',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-              ),
-              IconButton(
-                onPressed: _resetCsv,
-                icon: Icon(Icons.delete_sweep, color: Colors.grey[700]),
-                tooltip: 'Reset CSV',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-              ),
+              _tableRow('Nr', 'Insp', 'Hold', 'Solve', isHeader: true),
             ],
           ),
         ),
@@ -501,10 +507,19 @@ class _EasyTwoState extends State<EasyTwo> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: Row(
         children: [
-          SizedBox(width: 40, child: Text(nr, style: style)),
-          Expanded(child: Text(insp, style: style)),
-          Expanded(child: Text(hold, style: style)),
-          Expanded(child: Text(solve, style: style)),
+          SizedBox(
+            width: 40,
+            child: Text(nr, style: style, textAlign: TextAlign.right),
+          ),
+          Expanded(
+            child: Text(insp, style: style, textAlign: TextAlign.right),
+          ),
+          Expanded(
+            child: Text(hold, style: style, textAlign: TextAlign.right),
+          ),
+          Expanded(
+            child: Text(solve, style: style, textAlign: TextAlign.right),
+          ),
         ],
       ),
     );

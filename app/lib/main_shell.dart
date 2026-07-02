@@ -37,8 +37,8 @@ class _MainShellState extends State<MainShell> {
         title: Align(
           // alignment: Alignment.centerRight,
           child: CircleAvatar(
-            backgroundImage: AssetImage('assets/images/cube.jpg'),
-            radius: 18,
+            backgroundImage: AssetImage('assets/images/cube.webp'),
+            radius: 22,
           ),
         ),
         actions: [
