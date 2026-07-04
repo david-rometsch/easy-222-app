@@ -7,8 +7,8 @@ class GetScramble {
 
   Future<void> loadData() async {
     final response = await rootBundle.loadString(
-      // 'assets/scrambles/two_by_two/222scrambles.json',
-      'assets/scrambles/three_by_three/333scrambles.json',
+      'assets/scrambles/two_by_two/222scrambles.json',
+      // 'assets/scrambles/three_by_three/333scrambles.json',
     );
     _scrambleList = jsonDecode(response);
   }
