@@ -47,5 +47,6 @@ app.*.map.json
 
 /archive/
 
-/scripts/
+/scripts/*
+!/scripts/convert_scrambles.py
 
