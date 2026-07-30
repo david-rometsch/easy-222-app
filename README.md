@@ -1,13 +1,13 @@
-# Easy-222
+# Easy2
 
 A 2×2 speedcubing training timer built with Flutter.  
 School project — TEKO Schweizerische Fachschule, Herbstsemester 2026.
 
 ## What it does
 
-Easy-222 is a non-WCA-conform training timer with two goals:
+Easy2 is a non-WCA-conform training timer with two goals:
 
-1. **Simplified scrambles** — short, easy 2×2 scrambles so you can train one-looking efficiently. Competition scrambles are too long to one-look; Easy-222 scrambles are designed so the solution is immediately visible, letting you focus on execution speed.
+1. **Simplified scrambles** — short, easy 2×2 scrambles so you can train one-looking efficiently. Competition scrambles are too long to one-look; Easy2 scrambles are designed so the solution is immediately visible, letting you focus on execution speed.
 
 2. **Data collection** — records **inspection time**, **hold time**, and **solve time** simultaneously, captured at the exact moment you lift your finger. Short holds (< 550 ms) typically cause DNFs. Export your session data as CSV to find your weak spots.
 
